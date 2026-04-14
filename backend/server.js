@@ -29,6 +29,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
 app.use('/api/wallet', require('./routes/walletRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/games', require('./routes/gameRoutes'));
 
 // Basic Route for testing
 app.get('/api/health', (req, res) => {

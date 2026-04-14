@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, LayoutDashboard, Coins, Code, Settings } from 'lucide-react';
+import { LogOut, LayoutDashboard, Coins, Code, Settings, Gamepad2 } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -32,6 +32,10 @@ const Navbar = () => {
                 
                 <Link href="/dashboard" className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors">
                   <LayoutDashboard className="w-5 h-5" />
+                </Link>
+
+                <Link href="/games" title="Arcade Games" className="p-2 text-gray-400 hover:text-yellow-400 hover:bg-yellow-400/10 rounded-full transition-colors">
+                  <Gamepad2 className="w-5 h-5" />
                 </Link>
 
                 {user.role === 'admin' && (
