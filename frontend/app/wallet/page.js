@@ -68,9 +68,11 @@ export default function Wallet() {
         {/* Left Col - Balance & Withdraw */}
         <div className="lg:col-span-1 space-y-6">
           <div className="glass-card p-6 border-l-4 border-l-blue-500 border border-white/5 text-center">
-            <h2 className="text-gray-400 font-medium mb-2">Available Balance</h2>
-            <div className="text-5xl font-extrabold font-mono text-white mb-1">{user?.balance || 0}</div>
-            <p className="text-sm text-gray-500">Coins</p>
+            <h2 className="text-gray-400 font-medium mb-3">Available Balance</h2>
+            <div className="text-5xl font-extrabold font-mono text-white mb-6 tracking-tight">{user?.balance || 0}</div>
+            <Link href="/deposit" className="w-full inline-flex justify-center items-center py-4 bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 rounded-2xl font-black text-white outline-none active:scale-95 transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+                <Send className="mr-2 rotate-180" size={20} /> Add Funds (Recharge)
+            </Link>
           </div>
 
           <div className="glass-card p-6 border border-white/5">

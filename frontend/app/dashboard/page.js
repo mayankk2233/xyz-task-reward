@@ -66,11 +66,11 @@ export default function Dashboard() {
                  </div>
 
                  <div className="mt-8 sm:mt-0 flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                     <Link href="/deposit" className="flex-1 sm:flex-none flex items-center justify-center bg-green-500/20 text-green-400 border border-green-500/50 font-black text-lg px-10 py-5 rounded-full hover:bg-green-500/30 transition-all shadow-[0_0_30px_rgba(34,197,94,0.1)] active:scale-95">
+                         Deposit
+                     </Link>
                      <Link href="/wallet" className="flex-1 sm:flex-none flex items-center justify-center bg-white text-black font-black text-lg px-10 py-5 rounded-full hover:bg-gray-200 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] active:scale-95">
                          Withdraw
-                     </Link>
-                     <Link href="/tasks" className="flex-1 sm:flex-none flex items-center justify-center bg-gray-800 text-white font-bold text-lg px-10 py-5 rounded-full border border-gray-700 hover:bg-gray-700 transition-all active:scale-95">
-                         Earn More
                      </Link>
                  </div>
              </div>
