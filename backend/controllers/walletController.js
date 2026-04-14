@@ -1,6 +1,7 @@
 const Transaction = require('../models/Transaction');
 const Withdrawal = require('../models/Withdrawal');
 const User = require('../models/User');
+const Deposit = require('../models/Deposit');
 
 // @desc    Get user's transaction history
 // @route   GET /api/wallet/history
@@ -78,7 +79,36 @@ const requestWithdrawal = async (req, res) => {
   }
 };
 
+// @desc    Request a deposit (Recharge)
+// @route   POST /api/wallet/deposit
+// @access  Private
+const requestDeposit = async (req, res) => {
+  const { amount, utrNumber } = req.body;
+  const userId = req.user._id;
+
+  try {
+    if (!amount || amount <= 0) return res.status(400).json({ success: false, message: 'Invalid amount' });
+    if (!utrNumber || utrNumber.length < 8) return res.status(400).json({ success: false, message: 'Valid UTR/Transaction ID is required' });
+
+    const exists = await Deposit.findOne({ utrNumber });
+    if (exists) return res.status(400).json({ success: false, message: 'This UTR has already been submitted.' });
+
+    const deposit = await Deposit.create({ user: userId, amount, utrNumber });
+
+    await Transaction.create({
+      user: userId,
+      amount: amount,
+      type: 'earn', 
+      description: `Deposit request (Pending) - UTR: ${utrNumber}`,
+      relatedId: deposit._id
+    });
+
+    res.status(201).json({ success: true, message: 'Deposit submitted for verification', data: deposit });
+  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
 module.exports = {
   getHistory,
-  requestWithdrawal
+  requestWithdrawal,
+  requestDeposit
 };

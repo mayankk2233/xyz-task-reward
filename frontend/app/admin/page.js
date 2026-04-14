@@ -10,6 +10,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
+  const [deposits, setDeposits] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // New task form state
@@ -31,6 +32,9 @@ export default function AdminDashboard() {
       } else if (activeTab === 'withdrawals') {
         const res = await api.get('/admin/withdrawals');
         setWithdrawals(res.data.data);
+      } else if (activeTab === 'deposits') {
+        const res = await api.get('/admin/deposits');
+        setDeposits(res.data.data);
       }
     } catch (error) {
       console.error(error);
@@ -68,6 +72,16 @@ export default function AdminDashboard() {
     }
   };
 
+  const processDeposit = async (id, status) => {
+    if (!window.confirm(`Confirm marking this deposit ticket as ${status.toUpperCase()}?`)) return;
+    try {
+      await api.put(`/admin/deposits/${id}`, { status });
+      fetchData();
+    } catch (error) {
+      alert('Error processing deposit');
+    }
+  };
+
   return (
     <ProtectedRoute adminOnly={true}>
       <div className="max-w-7xl mx-auto space-y-6">
@@ -84,6 +98,7 @@ export default function AdminDashboard() {
             { id: 'users', label: 'Manage Users', icon: Users },
             { id: 'tasks', label: 'Manage Tasks', icon: LayoutList },
             { id: 'withdrawals', label: 'Review Withdrawals', icon: Banknote },
+            { id: 'deposits', label: 'Verify User Deposits', icon: Banknote },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -250,6 +265,62 @@ export default function AdminDashboard() {
                                     <CheckCircle className="w-5 h-5" />
                                   </button>
                                   <button onClick={() => processWithdrawal(w._id, 'rejected')} className="p-2 bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white rounded transition-colors" title="Reject & Refund">
+                                    <XCircle className="w-5 h-5" />
+                                  </button>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* === DEPOSITS TAB === */}
+              {activeTab === 'deposits' && (
+                <div className="glass-card overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm text-gray-300">
+                      <thead className="text-xs uppercase bg-black/20 text-gray-400">
+                        <tr>
+                          <th className="px-6 py-4">User</th>
+                          <th className="px-6 py-4">Recharge Amount</th>
+                          <th className="px-6 py-4">UTR Number</th>
+                          <th className="px-6 py-4">Requested</th>
+                          <th className="px-6 py-4">Status</th>
+                          <th className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {deposits.length === 0 ? (
+                          <tr><td colSpan="6" className="px-6 py-8 text-center text-gray-500">No deposit requests pending.</td></tr>
+                        ) : deposits.map(d => (
+                          <tr key={d._id} className="border-b border-white/5 hover:bg-white/5">
+                            <td className="px-6 py-4">
+                              <span className="text-white block font-medium">{d.user?.username}</span>
+                              <span className="text-xs text-gray-500">{d.user?.email}</span>
+                            </td>
+                            <td className="px-6 py-4 font-mono font-bold text-yellow-400">₹{d.amount}</td>
+                            <td className="px-6 py-4 font-mono text-white bg-black/40 px-2 py-1 rounded tracking-widest">{d.utrNumber}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">{new Date(d.createdAt).toLocaleDateString()}</td>
+                            <td className="px-6 py-4">
+                              <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                d.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                                d.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                                'bg-red-500/20 text-red-400'
+                              }`}>
+                                {d.status.toUpperCase()}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              {d.status === 'pending' && (
+                                <div className="flex justify-end gap-2">
+                                  <button onClick={() => processDeposit(d._id, 'approved')} className="p-2 bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white rounded transition-colors" title="Verify & Credit Amount">
+                                    <CheckCircle className="w-5 h-5" />
+                                  </button>
+                                  <button onClick={() => processDeposit(d._id, 'rejected')} className="p-2 bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white rounded transition-colors" title="Reject Fake UTR">
                                     <XCircle className="w-5 h-5" />
                                   </button>
                                 </div>

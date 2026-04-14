@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Task = require('../models/Task');
 const Withdrawal = require('../models/Withdrawal');
 const Transaction = require('../models/Transaction');
+const Deposit = require('../models/Deposit');
 
 // @desc    Get all users
 // @route   GET /api/admin/users
@@ -135,11 +136,56 @@ const processWithdrawal = async (req, res) => {
   }
 };
 
+// @desc    Get all deposits
+// @route   GET /api/admin/deposits
+// @access  Private/Admin
+const getAllDeposits = async (req, res) => {
+  try {
+    const deposits = await Deposit.find({}).populate('user', 'username email balance').sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: deposits });
+  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+// @desc    Process a deposit
+// @route   PUT /api/admin/deposits/:id
+// @access  Private/Admin
+const processDeposit = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['approved', 'rejected'].includes(status)) return res.status(400).json({ success: false, message: 'Invalid status' });
+
+    const deposit = await Deposit.findById(req.params.id);
+    if (!deposit) return res.status(404).json({ success: false, message: 'Deposit not found' });
+    if (deposit.status !== 'pending') return res.status(400).json({ success: false, message: 'Deposit is already processed' });
+
+    deposit.status = status;
+    await deposit.save();
+
+    if (status === 'approved') {
+      const user = await User.findById(deposit.user);
+      user.balance += deposit.amount;
+      await user.save();
+
+      await Transaction.create({
+        user: user._id,
+        amount: deposit.amount,
+        type: 'earn',
+        description: `Deposit Approved - UTR: ${deposit.utrNumber}`,
+        relatedId: deposit._id
+      });
+    }
+
+    res.status(200).json({ success: true, data: deposit });
+  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
 module.exports = {
   getAllUsers,
   getAllTasks,
   createTask,
   updateTask,
   getAllWithdrawals,
-  processWithdrawal
+  processWithdrawal,
+  getAllDeposits,
+  processDeposit
 };
