@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { User, Mail, Lock, Link as LinkIcon, ArrowRight, AlertCircle } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -14,7 +15,7 @@ export default function Register() {
   });
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register } = useAuth();
+  const authProvider = useAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -25,7 +26,7 @@ export default function Register() {
     setIsSubmitting(true);
     setError(null);
     try {
-      await register(formData.username, formData.email, formData.password, formData.referralCode);
+      await authProvider.register(formData.username, formData.email, formData.password, formData.referralCode);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
       setIsSubmitting(false);
@@ -138,6 +139,30 @@ export default function Register() {
               )}
             </button>
           </form>
+
+          <div className="mt-8">
+             <div className="relative mb-6">
+                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
+                 <div className="relative flex justify-center text-sm"><span className="px-3 bg-gray-900/10 text-gray-400 font-medium">Or quick register with</span></div>
+             </div>
+             
+             <div className="flex justify-center w-full bg-white/5 p-4 rounded-2xl border border-white/10 hover:bg-white/10 transition">
+                 <GoogleLogin
+                     onSuccess={async (credentialResponse) => {
+                         try {
+                           const base64Url = credentialResponse.credential.split('.')[1];
+                           const payload = JSON.parse(window.atob(base64Url.replace(/-/g, '+').replace(/_/g, '/')));
+                           await authProvider.googleLogin({ token: credentialResponse.credential, email: payload.email, name: payload.name, referralCode: formData.referralCode });
+                         } catch (err) { setError("Google login system encountered an error."); }
+                     }}
+                     onError={() => { setError("Google login popup closed or blocked."); }}
+                     useOneTap
+                     text="signup_with"
+                     theme="filled_black"
+                     shape="pill"
+                 />
+             </div>
+          </div>
 
           <div className="mt-8 text-center">
             <p className="text-gray-400 text-sm">

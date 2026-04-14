@@ -4,20 +4,21 @@ import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const authProvider = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
     try {
-      await login(email, password);
+      await authProvider.login(email, password);
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
       setIsSubmitting(false);
@@ -102,6 +103,29 @@ export default function Login() {
               )}
             </button>
           </form>
+
+          <div className="mt-8">
+             <div className="relative mb-6">
+                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
+                 <div className="relative flex justify-center text-sm"><span className="px-3 bg-gray-900/10 text-gray-400 font-medium">Or continue securely with</span></div>
+             </div>
+             
+             <div className="flex justify-center w-full bg-white/5 p-4 rounded-2xl border border-white/10 hover:bg-white/10 transition">
+                 <GoogleLogin
+                     onSuccess={async (credentialResponse) => {
+                         try {
+                           const base64Url = credentialResponse.credential.split('.')[1];
+                           const payload = JSON.parse(window.atob(base64Url.replace(/-/g, '+').replace(/_/g, '/')));
+                           await authProvider.googleLogin({ token: credentialResponse.credential, email: payload.email, name: payload.name });
+                         } catch (err) { setError("Google login system encountered an error."); }
+                     }}
+                     onError={() => { setError("Google login popup closed or blocked."); }}
+                     useOneTap
+                     theme="filled_black"
+                     shape="pill"
+                 />
+             </div>
+          </div>
 
           <div className="mt-8 text-center">
             <p className="text-gray-400 text-sm">
