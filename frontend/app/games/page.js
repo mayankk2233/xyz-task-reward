@@ -7,7 +7,7 @@ import ProtectedRoute from '../../components/ProtectedRoute';
 export default function GamesDashboard() {
   const games = [
     { id: 'coinflip', title: 'Coin Flip', description: 'Double your coins instantly with a 50/50 flip.', icon: <Coins size={32} className="text-yellow-400" />, comingSoon: false },
-    { id: 'dice', title: 'Dice Roll', description: 'Predict the dice numbers for a higher payout.', icon: <Dices size={32} className="text-purple-400" />, comingSoon: true },
+    { id: 'color', title: 'Color Prediction', description: 'Live 1-Minute Wingo betting with huge visual multipliers.', icon: <Dices size={32} className="text-purple-400" />, comingSoon: false },
   ];
 
   return (
